@@ -5,13 +5,14 @@
 - [Asking For Images, Videos, Audio Or Location](#asking-for-data)
 - [Structured Question With Patterns](#structured-question)
 - [Originating Conversations](#originating-conversations)
-- [Skipping Conversations](#skipping-conversations)
+- [Skip or Stop Conversations](#skip-stop-conversations)
 - [Caching Conversations](#caching-conversations)
+- [Debugging Conversations](#debugging-conversations)
 
-When it comes to chat bots, you probably don't want to simply react to single keywords, but instead, you might need to gather information from the user, using a conversation. 
+When it comes to chat bots, you probably don't want to simply react to single keywords, but instead, you might need to gather information from the user, using a conversation.
 Let's say, that you want your chat bot to provide an elegant user onboarding experience for your application users. In the onboarding process we are going to ask the user for their firstname and email address - that's a perfect fit for conversations!
 
-> {callout-info} You must configure a persistent [Cache Driver](/__version__/cache-drivers) to use BotMan's Conversation, as BotMan will keep the conversation state cached. BotMan Studio handles it all for you
+> {callout-info} If you are **not** using [BotMan Studio](/__version__/botman-studio), you must configure a persistent [Cache Driver](/__version__/cache-drivers) to use BotMan's Conversation, as BotMan will keep the conversation state cached.
 
 <a id="starting-a-conversation"></a>
 ## Starting A Conversation
@@ -22,9 +23,8 @@ You can start a conversation with your users using the `startConversation` metho
 $botman->hears('Hello', function($bot) {
     $bot->startConversation(new OnboardingConversation);
 });
-// Listen
-$botman->listen();
 ```
+<a href="#" onclick="botmanChatWidget.say('Hello');return false;" class="w-full block text-right font-bold">Try it out</a>
 
 Let's take a look at the `OnboardingConversation` class:
 
@@ -32,7 +32,7 @@ Let's take a look at the `OnboardingConversation` class:
 class OnboardingConversation extends Conversation
 {
     protected $firstname;
-    
+
     protected $email;
 
     public function askFirstname()
@@ -68,14 +68,32 @@ All conversations that your bot might use need to extend the abstract Conversati
 
 This is the starting point of your conversation and get's executed immediately.
 
-As you can see in the onboarding conversation, we have two questions that get asked one after another. Just like a regular conversation, the bot first asks for the firstname and saves the value in the conversation object itself.
+As you can see in the onboarding conversation, we have two questions that get asked one after another. Just like a regular conversation, the bot first asks for the firstname and saves the value in the conversation object itself. Beware that your class variables must be declared as `protected` or `public` so that they can be saved in cache.
 
 After it retrieves an answer from the user, the callback gets executed and the bot asks the next question, which retrieves the user's email address.
+
+### Starting within a conversation
+
+When you build more and more conversations, you probably also want to connect them. This is when it gets very useful to start a conversation within another one.
+
+```php
+public function askEmail()
+{
+	$this->ask('One more thing - what is your email?', function(Answer $answer) {
+		// Save result
+		$this->email = $answer->getText();
+
+		$this->say('Great - that is all we need, '.$this->firstname);
+
+		$this->bot->startConversation(new FavouriteLunchConversation());
+	});
+}
+```
 
 <a id="asking-questions"></a>
 ## Asking Questions
 
-BotMan gives you two ways to ask your users questions. The straight forward aproach is simply using a string as a question:
+BotMan gives you two ways to ask your users questions. The straight forward approach is simply using a string as a question:
 
 ```php
 // ...inside the conversation object...
@@ -90,7 +108,7 @@ public function askMood()
 Instead of passing a string to the `ask()` method, it is also possible to create a question object.
 The question objects make use of the interactive messages from supported messaging services to present the user buttons to interact with.
 <br><br>
-When passing question objects to the `ask()` method, the returned `Answer` object has a method called `isInteractiveMessageReply` to detect, if 
+When passing question objects to the `ask()` method, the returned `Answer` object has a method called `isInteractiveMessageReply` to detect, if
 the user interacted with the message and clicked on a button or simply entered text.
 <br><br>
 Creating a simple Question object:
@@ -121,7 +139,7 @@ public function askForDatabase()
 ## Asking For Images, Videos, Audio or Location
 
 With BotMan, you can easily let your bot [receive images, videos, audio files or locations](/__version__/receiving-additional-content).
-The same approach can be applied to your conversation. This is especially useful if you only want your bot users to provide you with specific attachment types. 
+The same approach can be applied to your conversation. This is especially useful if you only want your bot users to provide you with specific attachment types.
 
 You might use the `askForImages` method to ask your bot users a question and only accept one or more images as a valid answer:
 
@@ -180,10 +198,10 @@ public function askLocation()
 ## Structured Question With Patterns
 
 You might also want to ask your user questions, where you already know the answer should be in a fixed set of possible options.
-For example a simple yes or no question. 
+For example a simple yes or no question.
 
 Instead of passing a closure to the `ask` method, you can simply pass it an array.
-BotMan will then look first for a matching pattern, and execute only the callback whose pattern is matched. 
+BotMan will then look first for a matching pattern, and execute only the callback whose pattern is matched.
 
 This allows the bot to present multiple choice options, or to proceed only when a valid response has been received. The patterns can have the same placeholders as the `$bot->reply()` method has. All matching parameters will be passed to the callback function.
 
@@ -220,32 +238,33 @@ To do so, just use the `startConversation` method, as you would normally do, but
 $botman->startConversation(new PizzaConversation(), 'my-recipient-user-id', TelegramDriver::class);
 ```
 
-<a id="skipping-conversations"></a>
+<a id="#skip-stop-conversations"></a>
 ## Skip or Stop Conversations
 
-While being in a conversation it is sometimes useful to stop it for a certain reason. In order to make this possible there a two methods available in every conversation class: `skipConversation()` and `stopConversation()`. Inside those methods you can return true or false to skip or stop a conversation. Skip will stop the conversation just for this one request. Afterwards it will go on as if nothing happened. The stop method will delete the conversation, so there is no turning back.
+While being in a conversation it is sometimes useful to stop it for a certain reason. In order to make this possible there a two methods available in every conversation class: `skipsConversation()` and `stopsConversation()`. Inside those methods you can return true or false to skip or stop a conversation. Skip will stop the conversation just for this one request. Afterwards it will go on as if nothing happened. The stop method will delete the conversation, so there is no turning back.
 
-The example below will stop the conversation if the message says `stop` and skip it if it says `pause`. 
+The example below will stop the conversation if the message says `stop` and skip it if it says `pause`.
 
 ```php
 class OnboardingConversation extends Conversation
 {
     protected $firstname;
-    
+
     protected $email;
-    
-    public function stopConversation(Message $message)
+
+  public function stopsConversation(IncomingMessage $message)
 	{
-		if ($message->getMessage() == 'stop') {
+		if ($message->getText() == 'stop') {
 			return true;
 		}
 
 		return false;
 	}
-	
-	public function skipConversation(Message $message)
+
+
+	public function skipsConversation(IncomingMessage $message)
 	{
-		if ($message->getMessage() == 'pause') {
+		if ($message->getText() == 'pause') {
 			return true;
 		}
 
@@ -276,10 +295,27 @@ $botman->hears('pause', function(BotMan $bot) {
 <a id="caching-conversations"></a>
 ## Caching Conversations
 
-Conversations get persisted in the cache. This means that the conversation class will be serialized in order to maintain the conversation state. Keep that in mind when developing for BotMan. The default cache duration is set to 30 minutes. If you need to increase or decrease this value, you can set a `conversation_cache_time` key on your BotMan configuration.
+Conversations get persisted in on of the available [cache drivers](/__version__/cache-drivers). This means that the conversation class will be serialized in order to maintain the conversation state. Keep that in mind when developing for BotMan. The default cache duration is set to 30 minutes. If you need to increase or decrease this value, you can set a `conversation_cache_time` key on your BotMan configuration.
 
 ```php
 'botman' => [
-	'conversation_cache_time' => 30
+    'conversation_cache_time' => 30
 ],
 ```
+
+
+<a id="debugging-conversations"></a>
+## Debugging Conversations
+
+As conversations get persisted in the cache, it can happen to you that you fix a bug inside one of your conversation scripts - but when you retry the chat command it still does not work.
+One of the reasons for this could be, that BotMan is still using the cached conversation that might still contain the error that you just fixed.
+
+If you use BotMan Studio you can clear the cache by using:
+
+```sh
+php artisan cache:clear
+```
+
+Then you can try the command again.
+
+If you do not use BotMan Studio, you have to manually delete the cache entries that BotMan created.

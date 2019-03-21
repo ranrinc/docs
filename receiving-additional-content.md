@@ -10,14 +10,14 @@
 <a id="introduction"></a>
 ## Introduction
 
-BotMan does not only allow you to listen for incoming textual messages, but also gives you the ability to listen for incoming images, videos, audio messages and locations.
+Similar to hearing for text input, BotMan also allows you to listen for incoming attachments like images, videos, audio messages or even shared locations.
 
 <a id="images"></a>
 ## Listen for images
 
 Making your bot listen to incoming images is easy. Just use the `receivesImages` method on the BotMan instance. All received images will be passed to the callback as a second argument.
 
-The images returned will be an array of `Image` objects.
+The images returned will be an array of `BotMan\BotMan\Messages\Attachments\Image` objects.
 
 ```php
 use BotMan\BotMan\Messages\Attachments\Image;
@@ -25,7 +25,7 @@ use BotMan\BotMan\Messages\Attachments\Image;
 $bot->receivesImages(function($bot, $images) {
 
     foreach ($images as $image) {
-    
+
         $url = $image->getUrl(); // The direct url
         $title = $image->getTitle(); // The title, if available
         $payload = $image->getPayload(); // The original payload
@@ -38,7 +38,7 @@ $bot->receivesImages(function($bot, $images) {
 
 Just like images, you can use the `receivesVideos` method on the BotMan instance to listen for incoming video file uploads. All received videos will be passed to the callback as a second argument.
 
-The videos returned will be an array of `Video` objects.
+The videos returned will be an array of `BotMan\BotMan\Messages\Attachments\Video` objects.
 
 ```php
 use BotMan\BotMan\Messages\Attachments\Video;
@@ -46,7 +46,7 @@ use BotMan\BotMan\Messages\Attachments\Video;
 $bot->receivesVideos(function($bot, $videos) {
 
     foreach ($videos as $video) {
-    
+
         $url = $video->getUrl(); // The direct url
         $payload = $video->getPayload(); // The original payload
     }
@@ -58,7 +58,7 @@ $bot->receivesVideos(function($bot, $videos) {
 
 Just like images, you can use the `receivesAudio` method on the BotMan instance to listen for incoming audio file uploads. All received audio files will be passed to the callback as a second argument.
 
-The audio files returned will be an array of `Audio` objects.
+The audio files returned will be an array of `BotMan\BotMan\Messages\Attachments\Audio` objects.
 
 ```php
 use BotMan\BotMan\Messages\Attachments\Audio;
@@ -66,7 +66,7 @@ use BotMan\BotMan\Messages\Attachments\Audio;
 $bot->receivesAudio(function($bot, $audios) {
 
     foreach ($audios as $audio) {
-    
+
         $url = $audio->getUrl(); // The direct url
         $payload = $audio->getPayload(); // The original payload
     }
@@ -78,7 +78,7 @@ $bot->receivesAudio(function($bot, $audios) {
 
 Just like images, you can use the `receivesFiles` method on the BotMan instance to listen for incoming file uploads. All received files will be passed to the callback as a second argument.
 
-The files returned will be an array of `File` objects.
+The files returned will be an array of `BotMan\BotMan\Messages\Attachments\File` objects.
 
 ```php
 use BotMan\BotMan\Messages\Attachments\File;
@@ -86,7 +86,7 @@ use BotMan\BotMan\Messages\Attachments\File;
 $bot->receivesFiles(function($bot, $files) {
 
     foreach ($files as $file) {
-    
+
         $url = $file->getUrl(); // The direct url
         $payload = $file->getPayload(); // The original payload
     }
@@ -98,7 +98,7 @@ $bot->receivesFiles(function($bot, $files) {
 
 Some messaging services also allow your bot users to send their GPS location to your bot. You can listen for these location calls using the `receivesLocation` method on the BotMan instance.
 
-The method will pass a `Location` object to the callback method.
+The method will pass a `BotMan\BotMan\Messages\Attachments\Location` object to the callback method.
 
 ```php
 use BotMan\BotMan\Messages\Attachments\Location;

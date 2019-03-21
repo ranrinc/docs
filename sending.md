@@ -9,46 +9,48 @@
 
 ## Introduction
 
-Bots have to send messages to deliver information and present an interface for their
+Bots send messages to deliver information and present an interface for their
 functionality.  BotMan can send messages in several different ways, depending
 on the type and number of messages that will be sent.
 
 Single message replies to incoming commands can be sent using the `$bot->reply()` function.
 
 Multi-message replies, particularly those that present questions for the end user to respond to,
-can be sent using the `$bot->startConversation()` function and the related [conversation](/__version__/conversations) sub-functions. 
+are sent using the `$bot->startConversation()` function and the related [conversation](/__version__/conversations) sub-functions.
 
-Bots can originate messages - that is, send a message based on some internal logic or external stimulus - using `$bot->say()` method.
+Bots can also originate messages - that means, sending messages based on some internal logic or external stimulus - using the `$bot->say()` method.
 
 <a id="single-message-replies"></a>
 
 ## Single Message Replies
 
-Once a bot has received a message using `hears()`, you may send a response  using `$bot->reply()`.
+Once a bot has received a message using `hears()`, you may send a response using `$bot->reply()`.
 
 This is the simplest way to respond to an incoming command:
 
 ```php
-$botman->hears('keyword', function (BotMan $bot) {
+$botman->hears('single response', function (BotMan $bot) {
     $bot->reply("Tell me more!");
 });
 ```
+<a href="#" onclick="botmanChatWidget.say('single response');return false;" class="w-full block text-right font-bold">Try it out</a>
 
 Do you feel like chatting some more? You may also send multiple responses in a single method.
 
 ```php
-$botman->hears('keyword', function (BotMan $bot) {
+$botman->hears('multi response', function (BotMan $bot) {
     $bot->reply("Tell me more!");
     $bot->reply("And even more");
 });
 ```
+<a href="#" onclick="botmanChatWidget.say('multi response');return false;" class="w-full block text-right font-bold">Try it out</a>
 
 <a id="attachments"></a>
 
 ## Attachments
 
-A common use case would be to not only send plain-text messages, but to also include an attachment along with your message.
-Depending on the messaging services you use, BotMan can send images, videos, audio files, generic files or even location data as attachment information.
+A common use case would be including an attachment along with your message.
+Depending on the messaging services that you are using, BotMan can send images, videos, audio files, generic files or even location data as attachment information.
 
 You may do this by composing your message using the `OutgoingMessage` class. This class takes care of transforming your data for each
 individual messaging service.
@@ -57,18 +59,19 @@ individual messaging service.
 use BotMan\BotMan\Messages\Attachments\Image;
 use BotMan\BotMan\Messages\Outgoing\OutgoingMessage;
 
-$botman->hears('keyword', function (BotMan $bot) {
+$botman->hears('image attachment', function (BotMan $bot) {
     // Create attachment
-    $attachment = new Image('http://image-url-here.jpg');
+    $attachment = new Image('https://botman.io/img/logo.png');
 
     // Build message object
     $message = OutgoingMessage::create('This is my text')
                 ->withAttachment($attachment);
-    
+
     // Reply message object
     $bot->reply($message);
 });
 ```
+<a href="#" onclick="botmanChatWidget.say('image attachment');return false;" class="w-full block text-right font-bold">Try it out</a>
 
 ### Images
 You may use the `Image` class to attach an image URL to your outgoing message.
@@ -86,7 +89,7 @@ $attachment = new Image('http://image-url-here.jpg', [
 // Build message object
 $message = OutgoingMessage::create('This is my text')
             ->withAttachment($attachment);
-    
+
 // Reply message object
 $bot->reply($message);
 ```
@@ -107,7 +110,7 @@ $attachment = new Video('http://video-url-here.mp4', [
 // Build message object
 $message = OutgoingMessage::create('This is my text')
             ->withAttachment($attachment);
-    
+
 // Reply message object
 $bot->reply($message);
 ```
@@ -128,7 +131,7 @@ $attachment = new Audio('http://audio-url-here.mp3', [
 // Build message object
 $message = OutgoingMessage::create('This is my text')
             ->withAttachment($attachment);
-    
+
 // Reply message object
 $bot->reply($message);
 ```
@@ -149,7 +152,7 @@ $attachment = new File('http://file-url-here.pdf', [
 // Build message object
 $message = OutgoingMessage::create('This is my text')
             ->withAttachment($attachment);
-    
+
 // Reply message object
 $bot->reply($message);
 ```
@@ -170,7 +173,7 @@ $attachment = new Location(61.766130, -6.822510, [
 // Build message object
 $message = OutgoingMessage::create('This is my text')
             ->withAttachment($attachment);
-    
+
 // Reply message object
 $bot->reply($message);
 ```
@@ -179,7 +182,7 @@ $bot->reply($message);
 
 ## Type Indicators
 
-To make your bot feel and act more human, you can make it send "typing ..." indicators. 
+To make your bot feel and act more human, you can make it send "typing ..." indicators.
 
 ```php
 
@@ -200,19 +203,15 @@ Please note, that not all messaging services support typing indicators. If it is
 BotMan also allows you to send messages to your chat users programatically. You could, for example, send out a daily message to your users that get's triggered
 by your cronjob.
 
-The easiest way is to just specify the driver-specific recipient ID when calling the `say` method.
-
-```php
-$botman->say('Message', 'my-recipient-user-id');
-```
-
-You may also specify the messaging driver if you know it:
+The easiest way is to just specify the driver-specific recipient ID when calling the `say` method and the driver to use.
 
 ```php
 $botman->say('Message', 'my-recipient-user-id', TelegramDriver::class);
 ```
 
 Just as the regular `reply` method, this method also accepts either simple strings or `OutgoingMessage` objects.
+
+For BotFramework (Skype) you should pass `['serviceUrl' => 'https://smba.trafficmanager.net/apis/']` as fourth parameter.
 
 
 <a id="sending-low-level-requests"></a>

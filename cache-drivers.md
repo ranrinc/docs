@@ -8,8 +8,9 @@
 
 If you want to make use of BotMans Conversation feature, you need to use a persistent cache driver, where BotMan can store and retrieve the conversations.
 If not specified otherwise, BotMan will use the ``array`` cache which is non-persistent.
-<br><br>
-If you use [BotMan Studio](/__version__/botman-studio) it is **not** required to specify cache drivers manually, as Laravel handles this for you.
+
+> {callout-info} If you use [BotMan Studio](/__version__/botman-studio) it is **not** required to specify cache drivers manually, as Laravel handles this for you.
+
 
 
 <a id="psr6"></a>
@@ -60,8 +61,8 @@ Use any [Symfony Cache](http://symfony.com/doc/current/components/cache.html) co
 
 ```php
 use BotMan\BotMan\Cache\SymfonyCache;
-use Symfony\Component\Cache\Simple\FilesystemCache;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
-$adapter = new FilesystemCache();
+$adapter = new FilesystemAdapter();
 $botman = BotManFactory::create($config, new SymfonyCache($adapter));
 ```

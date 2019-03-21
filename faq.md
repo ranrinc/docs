@@ -3,11 +3,11 @@
 - [What can I use BotMan for?](#what-can-i-use-botman-for)
 - [Which Messenger drivers are supported?](#which-messenger-drivers-are-supported)
 - [Can I create my own driver?](#can-i-create-my-own-driver)
-- [Can I use NLP platforms like Wit.ai or Api.ai?](#can-i-use-nlp-platforms-like-witai-or-apiai)
+- [Can I use NLP platforms like Wit.ai or Dialogflow?](#can-i-use-nlp-platforms-like-witai-or-dialogflow)
 - [Does it work without Laravel?](#does-it-work-without-laravel)
 - [Which PHP version do I need?](#which-php-version-do-i-need)
-- [Can I add a Facebook persistent menu?](#can-i-add-a-facebook-persistent-menu)
-- [How does BotMan saves the state of a conversation?](#how-does-botman-saves-the-state-of-a-conversation)
+- [How does BotMan save the state of a conversation?](#how-does-botman-save-the-state-of-a-conversation)
+- [Why when I change the webhook URL to something other than /botman does it stop working?](#change-web-hook-url)
 
 <a id="what-can-i-use-botman-for"></a>
 ## What can I use BotMan for?
@@ -24,29 +24,31 @@ Right now these messengers are included: Slack, Telegram, Microsoft Bot Framewor
 
 Yes you can. Build your own driver to connect BotMan with other messengers or to use it as an API.
 
-<a id="can-i-use-nlp-platforms-like-witai-or-apiai"></a>
-## Can I use NLP platforms like Wit.ai or Api.ai?
+<a id="can-i-use-nlp-platforms-like-witai-or-dialogflow"></a>
+## Can I use NLP platforms like Wit.ai or Dialogflow?
 
 Both platforms are available through given middlewares. They help you to understand the user's message and provide information about their intent. You can of course create your own middleware.
 
 <a id="does-it-work-without-laravel"></a>
 ## Does it work without Laravel?
 
-As already mentioned BotMan is a framework agnostic PHP library. So yes, it works without Laravel too. If you do want use Laravel, checkout the [BotMan Laravel Starter](https://github.com/mpociot/botman-laravel-starter) project.
+As already mentioned BotMan is a framework agnostic PHP library. So yes, it works without Laravel too. If you do want use Laravel, checkout the [BotMan Studio](https://github.com/botman/studio) project.
 
 <a id="which-php-version-do-i-need"></a>
 ## Which PHP version do I need?
 
-BotMan requires PHP >=5.6.
+BotMan requires PHP >=7.0.
 
-<a id="can-i-add-a-facebook-persistent-menu"></a>
-## Can I add a Facebook persistent menu?
-
-Yes you can, but not with BotMan ;-) Adding a persistent Facebook menu is just [one HTTP request](https://developers.facebook.com/docs/messenger-platform/messenger-profile/persistent-menu) to the Facebook API. No need to implement it here.
-
-<a id="how-does-botman-saves-the-state-of-a-conversation"></a>
-## How does BotMan saves the state of a conversation?
+<a id="how-does-botman-save-the-state-of-a-conversation"></a>
+## How does BotMan save the state of a conversation?
 
 BotMan provides a Conversation object that is used to string together several messages, including questions for the user, into a cohesive unit. In order to always know the current state of the conversation, the object gets saved through the cache.
 
 If not specified otherwise, BotMan will use array cache which is non-persistent. When using the Laravel facade it will automatically use the Laravel Cache component. Symfony and Codeigniter caches are also supported.
+
+<a id="change-web-hook-url"></a>
+## Why when I change the webhook URL to something other than /botman does it stop working?
+
+Laravel protects your application from cross-site request forgery (CSRF) attacks and as a result all requests are subject to a CSRF token verification. As the token is not passed along with the request from Facebook you need to exclude your webhook from CSRF checks. 
+
+You can exclude the routes by adding their URIs to the $except property of the VerifyCsrfToken middleware.
